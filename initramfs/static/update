@@ -23,7 +23,12 @@ if [ -z "$MYARCH" ]; then
   esac
 fi
 
-ln -f busybox-$MYARCH ./busybox
-ln -f mount.ntfs-3g-$MYARCH ./mount.ntfs-3g
-ln -f mount.dynfilefs-$MYARCH ./mount.dynfilefs
-ln -f eject-$MYARCH ./eject
+# link, or fallback to copy if filesystem does not support it
+touch link-test
+ln -f link-test link-test2 2>/dev/null && LN=ln || LN=cp
+rm -f link-test*
+
+$LN -f busybox-$MYARCH ./busybox
+$LN -f mount.ntfs-3g-$MYARCH ./mount.ntfs-3g
+$LN -f mount.dynfilefs-$MYARCH ./mount.dynfilefs
+$LN -f eject-$MYARCH ./eject
