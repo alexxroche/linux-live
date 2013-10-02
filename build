@@ -1,7 +1,23 @@
 #!/bin/bash
-# Linux Live Kit version 7
+# Linux Live Kit version 7.lxr
 
 export PATH=.:./tools:../tools:/usr/sbin:/usr/bin:/sbin:/bin:/
+
+mkisofs='/usr/local/bin/mkisofs'
+
+# sanity = check that we have everything
+
+# check that we have everything installed that we need
+for i in ${LinuxLive_DEPS[@]}
+do
+	$(which $i 2>&1 1>/dev/null) || echo Installing $i && $INSTALL $i
+done
+
+# seems debian has dropped mkisofs for genisoimage
+if [ ! "$( which mkisofs 1>/dev/null )" ]
+then 
+	ln -s $(which genisoimage) $mkisofs
+fi
 
 CHANGEDIR=$(dirname $(readlink -f $0))
 echo "Changing current directory to $CHANGEDIR"
@@ -38,31 +54,44 @@ cat bootfiles/syslinux.cfg | sed -r "s:/boot/:/$LIVEKITNAME/boot/:" > $BOOT/sysl
 cat bootfiles/bootinst.bat | sed -r "s:/boot/:/$LIVEKITNAME/boot/:" | sed -r "s:\\\\boot\\\\:\\\\$LIVEKITNAME\\\\boot\\\\:" > $BOOT/bootinst.bat
 cp $VMLINUZ $BOOT/
 
+# create exclude file for squashsf
+SQFS_EF='.exclude.sqfs'
+rm $SQFS_EF 2>/dev/null
+for i in $EXCLUDE; do echo $i>>$SQFS_EF; done
+
 if [ -d sb ]; then
    cp sb/* $LIVEKITDATA/$LIVEKITNAME/
 else
    # create compressed bundles
    for i in $MKMOD; do
-      mksquashfs /$i $LIVEKITDATA/$LIVEKITNAME/$i.$BEXT -comp xz -b 512k -keep-as-directory
+	if [ ! -f "$LIVEKITDATA/$LIVEKITNAME/$i.$BEXT" ]
+	then
+      	#	mksquashfs /$i $LIVEKITDATA/$LIVEKITNAME/$i.$BEXT -comp xz -b 512k -keep-as-directory -ef $SQFS.EF
+		echo mksquashfs for $i
+	fi
    done
 fi
+
+# actually install the squashfs files
+cp -pari $LIVEKITDATA/$LIVEKITNAME/*.BEXT $TARGET/modules
+
 
 # copy rootcopy folder
 if [ -d rootcopy ]; then
    cp -a rootcopy $LIVEKITDATA/$LIVEKITNAME/
 fi
 
+
 # create ISO for CD image
 echo "Creating ISO file for CD boot..."
 cd "$LIVEKITDATA"
-TARGET=/mnt/z
 if [ ! -d $TARGET ]; then
    TARGET=/tmp
 fi
 
 ARCH=$(uname -m)
 
-mkisofs -o "$TARGET/$LIVEKITNAME-$ARCH.iso" -v -J -R -D -A "$LIVEKITNAME" -V "$LIVEKITNAME" \
+$mkisofs -o "$TARGET/$LIVEKITNAME-$ARCH.iso" -v -J -R -D -A "$LIVEKITNAME" -V "$LIVEKITNAME" \
 -no-emul-boot -boot-info-table -boot-load-size 4 \
 -b "$LIVEKITNAME"/boot/isolinux.bin -c "$LIVEKITNAME"/boot/isolinux.boot . \
 >/dev/null 2>/dev/null
@@ -73,5 +102,5 @@ rm -f "$TARGET/$LIVEKITNAME-$ARCH.zip"
 zip -0 -r "$TARGET/$LIVEKITNAME-$ARCH.zip" *
 
 cd ..
-rm -Rf "$LIVEKITDATA"
+#rm -Rf "$LIVEKITDATA"
 echo "finished. Find your result in $TARGET"

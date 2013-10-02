@@ -1,0 +1,69 @@
+Feeling lost? Don't Panic.
+             ==============
+
+What will your USB-flash dive look like?
+If you format it as one large linux partion (using gprated or cfdisk)
+and then format the whole thing as ext4, (or your fs of choice)?
+How does this thing boot?
+All this and more will be explained here in sysadmin.nts style.
+
+== Overview of how it works ==
+Once you have unziped your new creation and moved the mylinux to the root of
+your USB-hdd what now? (You could use a CD, but are you really going to?)
+
+/mylinux/boot/bootinst.sh (or .bat for win32)
+    This installs in the Master Boot Record (MBR) of the flash-drive, 
+    instructions to boot.
+    It also sets the bootable flag on the partition.
+
+At boot the (CMOS) BIOS sees the bootable flag and, (if it is new enough)
+may give you the option to boot from your shiny new linux-live. 
+(You may have to enable this in the BIOS or bring up the boot menu.)
+
+Lets have a quick look at the layout of your device.
+
+== Layout ==
+.
+├── mylinux (or what ever your version is named)
+│   ├── boot
+│   │   ├── bootinst.bat
+│   │   ├── bootinst.sh
+│   │   ├── bootlogo.png
+│   │   ├── extlinux.exe
+│   │   ├── initrfs.img
+│   │   ├── isolinux.bin
+│   │   ├── mbr.bin
+│   │   ├── pxelinux.0
+│   │   ├── syslinux.cfg
+│   │   ├── syslinux.com
+│   │   ├── syslinux.exe
+│   │   ├── vesamenu.c32
+│   │   └── vmlinuz
+│   ├── changes
+│   └── modules
+└── readme.txt
+
+== initrfs ==
+This holds the initial filesystem that includes the binaries needed to finish booting. 
+vmlinuz is a compressed copy of the kernel image.
+
+Having read all of the docs you will know that we are using aufs and squashfs.
+The kernel needs modules for those, (unless you have statically compiled them).
+They live within the initrfs.img (created by the initramfs/initramfs_create script.)
+
+So where do the squashfs files ( etc.sb home.sb lib.sb opt.sb root.sb sbin.sb usr.sb var.sb )
+get used? How does the booting kernel know to mount each of those? 
+
+== Clean up for cloning ==
+After you have a working system you may want to make a backup image of your USB flash-drive.
+ You can safely remove:
+.
+├── mylinux (or what ever your version is named)
+│.. ├── boot
+│.. │   ├── bootinst.bat
+│.. │   ├── bootinst.sh
+│.. │   ├── extlinux.exe
+│.. │   ├── syslinux.com
+│.. │   └── syslinux.exe
+└── readme.txt
+

@@ -17,6 +17,8 @@ copy_including_deps()
       return
    fi
 
+   #echo Adding $1 to initramfs
+
    cp -R --parents "$1" "$INITRAMFS"
    if [ -L "$1" ]; then
       DIR="$(dirname "$1")"
@@ -68,13 +70,17 @@ mknod $INITRAMFS/dev/tty4 c 4 4
 
 # TODO: add all common filesystems which are NOT compiled in kernel already
 copy_including_deps /$LMK/kernel/fs/squashfs
+copy_including_deps /$LMK/kernel/fs/aufs
 copy_including_deps /$LMK/kernel/drivers/staging/zsmalloc # needed by zram
 copy_including_deps /$LMK/kernel/drivers/staging/zram
 copy_including_deps /$LMK/kernel/drivers/block/loop.*
 copy_including_deps /$LMK/kernel/fs/fuse
 copy_including_deps /$LMK/modules.*
 
-find $INITRAMFS -name "*.ko.gz" | xargs gunzip
+if [ "$(find $INITRAMFS -name "*.ko.gz")" ]
+then
+	find $INITRAMFS -name "*.ko.gz" | xargs gunzip
+fi
 
 # trim modules.order file. Perhaps we could remove it entirely
 MODULEORDER="$(cd "$INITRAMFS/$LMK/"; find -name "*.ko" | sed -r "s:^./::g" | tr "\n" "|" | sed -r "s:[.]:.:g")"
@@ -86,6 +92,7 @@ depmod -b $INITRAMFS $KERNEL
 echo "root::0:0::/root:/bin/bash" >$INITRAMFS/etc/passwd
 touch $INITRAMFS/etc/{m,fs}tab
 
+echo "$LIVEKITNAME Linux $VERSION \n \l" >$INITRAMFS/etc/issue
 cp init $INITRAMFS
 chmod a+x $INITRAMFS/init
 cp cleanup $INITRAMFS/lib
