@@ -9,10 +9,16 @@ DL="http://www.kernel.org/pub/linux/utils/boot/syslinux/$PKGTGZ"
 
 . ../.config
 
-# download, unpack, and patch syslinux
-wget -c "$DL"
+# download, unpack, and patch syslinux if it is missing or forced -f
+if [ ! -f "$PKGTGZ" ] || [ "$1" ]
+then
+	wget -c "$DL"
+fi
 tar -xf $PKGTGZ
-rm $PKGTGZ
+if [ $CLEANUP_DIRS ]
+then
+    rm $PKGTGZ
+fi
 
 cd $PKG
 

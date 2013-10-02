@@ -14,7 +14,7 @@ do
 done
 
 # seems debian has dropped mkisofs for genisoimage
-if [ ! "$( which mkisofs 1>/dev/null )" ]
+if [ ! "$( which mkisofs 1>/dev/null )" ] && [ ! -e $mkisofs ]
 then 
 	ln -s $(which genisoimage) $mkisofs
 fi
@@ -52,7 +52,8 @@ mv "$INITRAMFS" $BOOT/initrfs.img
 cp bootfiles/* $BOOT
 cat bootfiles/syslinux.cfg | sed -r "s:/boot/:/$LIVEKITNAME/boot/:" > $BOOT/syslinux.cfg
 cat bootfiles/bootinst.bat | sed -r "s:/boot/:/$LIVEKITNAME/boot/:" | sed -r "s:\\\\boot\\\\:\\\\$LIVEKITNAME\\\\boot\\\\:" > $BOOT/bootinst.bat
-cp $VMLINUZ $BOOT/
+cp $VMLINUZ $BOOT/vmlinuz
+
 
 # create exclude file for squashsf
 SQFS_EF='.exclude.sqfs'
@@ -67,13 +68,13 @@ else
 	if [ ! -f "$LIVEKITDATA/$LIVEKITNAME/$i.$BEXT" ]
 	then
       	#	mksquashfs /$i $LIVEKITDATA/$LIVEKITNAME/$i.$BEXT -comp xz -b 512k -keep-as-directory -ef $SQFS.EF
-		echo mksquashfs for $i
+		echo mksquashfs for $i into $LIVEKITDATA/$LIVEKITNAME/$i.$BEXT
 	fi
    done
 fi
 
 # actually install the squashfs files
-cp -pari $LIVEKITDATA/$LIVEKITNAME/*.BEXT $TARGET/modules
+cp -pari $LIVEKITDATA/$LIVEKITNAME/*.$BEXT $TARGET/modules
 
 
 # copy rootcopy folder
