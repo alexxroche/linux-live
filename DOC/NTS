@@ -44,8 +44,10 @@ Lets have a quick look at the layout of your device.
 └── readme.txt
 
 == initrfs ==
+http://www.linuxfromscratch.org/blfs/view/svn/postlfs/initramfs.html
 This holds the initial filesystem that includes the binaries needed to finish booting. 
-vmlinuz is a compressed copy of the kernel image.
+vmlinuz is a compressed copy of the kernel image that using initramfs and runs /init
+from within initramfs, (if it exists.)
 
 Having read all of the docs you will know that we are using aufs and squashfs.
 The kernel needs modules for those, (unless you have statically compiled them).
