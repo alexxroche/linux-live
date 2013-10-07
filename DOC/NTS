@@ -54,7 +54,7 @@ The kernel needs modules for those, (unless you have statically compiled them).
 They live within the initrfs.img (created by the initramfs/initramfs_create script.)
 
 So where do the squashfs files ( etc.sb home.sb lib.sb opt.sb root.sb sbin.sb usr.sb var.sb )
-get used? How does the booting kernel know to mount each of those? 
+get used? How does the booting kernel know to mount each of those? [0]
 
 == Clean up for cloning ==
 After you have a working system you may want to make a backup image of your USB flash-drive.
@@ -69,3 +69,20 @@ After you have a working system you may want to make a backup image of your USB 
 │.. │   └── syslinux.exe
 └── readme.txt
 
+== aufs ==
+One of the big advantages of an AUFS style file system is with flash-memory.
+ Because each write can hasten the failure of flash storage AUFS can create 
+an overlayed filesystem held entirely in an RAM as a tmpfs. 
+ The indirect advantage is that local changes are undone by rebooting. 
+ In many cases this is helpful, (especially if your data is actually held 
+in-the-cloud.) 
+ The down side is the same result, (you have no persistent changes.) 
+
+That is why you can chose, (I hope [1]) to configure some locations, (e.g.
+~/.ssh/ /var/lib/mysql/ ) as persistent, while protecting your USB 
+flash-drive from degradation ( ~/.local/share/recently-used.xbel ).
+.
+
+[0] Add explanation of how aufs uses our squash(ed)fs files.
+[1] Add a script and guide explaining how to hack aufs to add both tmpfs
+    and persistent storage for USB flash-drives.
