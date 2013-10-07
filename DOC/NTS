@@ -83,6 +83,18 @@ That is why you can chose, (I hope [1]) to configure some locations, (e.g.
 flash-drive from degradation ( ~/.local/share/recently-used.xbel ).
 .
 
+
+
 [0] Add explanation of how aufs uses our squash(ed)fs files.
 [1] Add a script and guide explaining how to hack aufs to add both tmpfs
     and persistent storage for USB flash-drives.
+    Like http://jan.varho.org/?p=254
+    
+"mkdir -p tmp-ro tmp-rw tmp-aufs
+sudo mount -o loop fs.ro tmp-ro/
+sudo mount -o loop fs.rw tmp-rw/
+sudo mount -t aufs -o br:tmp-rw:tmp-ro none tmp-aufs/
+
+Now tmp-ro shows the squshfs, tmp-rw shows the changes stored in 
+caster-rw and tmp-aufs shows the layered filesystem as 
+the live OS would see it."
