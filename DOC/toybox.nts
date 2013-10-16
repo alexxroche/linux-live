@@ -1,0 +1,2 @@
+Idea: git submodule add https://github.com/gfto/toybox toybox
+and build custom binary into the tool chain.
